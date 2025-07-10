@@ -1,5 +1,11 @@
 # Gitops With ArgoCD
 
+[![Helm](https://img.shields.io/badge/Helm-Package%20Manager-0F1689?logo=helm&logoColor=white)](https://helm.sh/)
+[![Argo CD](https://img.shields.io/badge/Argo%20CD-GitOps%20CD-EF7B4D?logo=argo&logoColor=white)](https://argo-cd.readthedocs.io/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-Orchestration-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![GitOps](https://img.shields.io/badge/GitOps-Automated%20Delivery-1F6FEB?logo=git&logoColor=white)](https://opengitops.dev/)
+
+
 This repository implements a GitOps workflow using Argo CD and Helm to manage Kubernetes deployments across multiple environments: `dev`, `stg` (staging), and `prod`. It is structured to promote environment-specific configuration and reusable Helm charts.
  
 
