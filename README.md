@@ -1,5 +1,7 @@
 # Gitops With ArgoCD
 
+Reusable 
+
 ## 🗂️ Structure Overview
 ```
 gitops-argocd/
@@ -68,7 +70,7 @@ spec:
       - CreateNamespace=true
 ```
 
-### 🧩 Chart Highlights (my-app-chart/)
+## 🧩 Chart Highlights (my-app-chart/)
 
 - Health checks, resource limits, and HPA (deployment.yaml, hpa.yaml)
 
@@ -77,3 +79,24 @@ spec:
 - Secrets and configmaps per environment
 
 - _helpers.tpl to keep naming consistent
+
+## 📚 Environments
+
+| Environment             | Helm Values File                 | Path                                                 |
+|-------------------------|----------------------------------|------------------------------------------------------|
+| Dev                     | `values-dev.yaml`                | `apps/dev/my-app/`                                   |
+| Staging                 | `values-stg.yaml`                | `apps/stg/my-app/`                                   |
+| Production              | `values.prod.yaml`               | `apps/prod/my-app/`                                  |
+
+## 📌 Getting Started
+
+- Install Argo CD
+
+- Push GitOps repo to GitHub
+
+- Apply `application.yaml` via Argo CD CLI or UI:
+```bash
+argocd app create -f apps/dev/my-app/application.yaml
+```
+- Watch it sync and deploy into EKS!
+
