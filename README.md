@@ -15,22 +15,25 @@ gitops-argocd/
 ├── apps/
 │   ├── dev/
 │   │   ├── my-app/
-│   │   │   ├── application.yaml      # Argo CD Application CR for dev
-│   │   │   └── values.yaml           # Symlink or copy of values-dev.yaml
+│   │   │   └── application.yaml      # Argo CD Application CR for dev
 │   ├── stg/
 │   │   ├── my-app/
-│   │   │   ├── application.yaml
-│   │   │   └── values.yaml
+│   │   │   └── application.yaml
 │   └── prod/
 │       ├── my-app/
-│       │   ├── application.yaml
-│       │   └── values.yaml
+│       │   └── application.yaml
 ├── charts/
 │   └── my-app-chart/                 # Reusable Helm chart
 │       ├── Chart.yaml
 │       ├── templates/
-│       └── values-dev.yaml
-│       └── values-stg.yaml
+│       │   ├── frontend-deployment.yaml
+│       │   ├── frontend-service.yaml
+│       │   ├── backend-deployment.yaml
+│       │   ├── backend-service.yaml
+│       │   ├── secert.yaml
+│       │   └── ingress.yaml            
+│       ├── values-dev.yaml
+│       ├── values-stg.yaml
 │       └── values-prod.yaml
 └── README.md
 ```
