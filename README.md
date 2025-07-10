@@ -102,7 +102,7 @@ spec:
 |-------------------------|----------------------------------|------------------------------------------------------|
 | Dev                     | `values-dev.yaml`                | `apps/dev/my-app/`                                   |
 | Staging                 | `values-stg.yaml`                | `apps/stg/my-app/`                                   |
-| Production              | `values.prod.yaml`               | `apps/prod/my-app/`                                  |
+| Production              | `values-prod.yaml`               | `apps/prod/my-app/`                                  |
 
 ## 📌 Getting Started
 
