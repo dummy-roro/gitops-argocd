@@ -1,6 +1,7 @@
 # Gitops With ArgoCD
 
-Reusable 
+This repository implements a GitOps workflow using Argo CD and Helm to manage Kubernetes deployments across multiple environments: `dev`, `stg` (staging), and `prod`. It is structured to promote environment-specific configuration and reusable Helm charts.
+ 
 
 ## 🗂️ Structure Overview
 ```
