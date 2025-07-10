@@ -1,7 +1,132 @@
-replicaCount: 1
+# ----------------------------------------
+# Global Configuration
+# ----------------------------------------
+namespace: three-tier
+env: dev
+
+# ----------------------------------------
+# Application Images
+# ----------------------------------------
 image:
-  repository: nginx
-  tag: "1.21"
+  registry: 407622020962.dkr.ecr.us-east-1.amazonaws.com
+  frontend:
+    name: frontend
+    tag: "3"
+    pullPolicy: Always
+  api:
+    name: backend
+    tag: "1"
+    pullPolicy: Always
+
+# ----------------------------------------
+# Image Pull Secrets
+# ----------------------------------------
+imagePullSecrets:
+  - name: ecr-registry-secret
+
+# ----------------------------------------
+# Deployment Settings
+# ----------------------------------------
+replicaCount: 1
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+
+# ----------------------------------------
+# Kubernetes Services
+# ----------------------------------------
 service:
-  type: ClusterIP
-  port: 80
+  frontend:
+    name: frontend
+    port: 3000
+  api:
+    name: api
+    port: 3500
+
+# ----------------------------------------
+# Mongo Secret (used by API)
+# ----------------------------------------
+secrets:
+  mongo:
+    name: mongo-sec
+    usernameKey: username
+    passwordKey: password
+    username: admin
+    password: password123
+
+# ----------------------------------------
+# Ingress Configuration
+# ----------------------------------------
+ingress:
+  enabled: true
+  name: mainlb
+  className: alb
+  scheme: internet-facing
+  targetType: ip
+  listenPorts: '[{"HTTP": 80}]'
+  host: amanpathakdevops.study
+  subnets: ""  # Leave blank in dev; override in prod
+
+# Ingress backend service references
+apiService:
+  name: api
+  port: 3500
+
+frontendService:
+  name: frontend
+  port: 3000
+
+# ----------------------------------------
+# Health Probes Per App
+# ----------------------------------------
+
+api:
+  livenessProbe:
+    path: /healthz
+    port: 3500
+    initialDelaySeconds: 2
+    periodSeconds: 5
+
+  readinessProbe:
+    path: /ready
+    port: 3500
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    successThreshold: 1
+
+  startupProbe:
+    path: /started
+    port: 3500
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    failureThreshold: 30
+
+frontend:
+  livenessProbe:
+    path: /
+    port: 3000
+    initialDelaySeconds: 1
+    periodSeconds: 5
+
+  readinessProbe:
+    path: /
+    port: 3000
+    initialDelaySeconds: 2
+    periodSeconds: 5
+
+  startupProbe:
+    path: /
+    port: 3000
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    failureThreshold: 15
