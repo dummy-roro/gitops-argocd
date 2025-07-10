@@ -114,5 +114,5 @@ spec:
 ```bash
 argocd app create -f apps/dev/my-app/application.yaml
 ```
-- Watch it sync and deploy into EKS!
+- Watch it sync and deploy into cluster!
 
