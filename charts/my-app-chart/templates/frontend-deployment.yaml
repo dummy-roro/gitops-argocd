@@ -8,9 +8,9 @@ metadata:
     tier: frontend
     env: {{ .Values.env }}
   annotations:
-    maintainer: "{{ .Values.maintainer }}"
-    description: "{{ .Values.description }}"
-spec: 
+    maintainer: "{{ .Values.maintainer | default "your-team@example.com" }}"
+    description: "{{ .Values.description | default "Frontend deployment for the three-tier app" }}"
+spec:
   replicas: {{ .Values.replicaCount }}
   strategy:
     type: RollingUpdate
@@ -18,7 +18,7 @@ spec:
       maxSurge: 1
       maxUnavailable: 25%
   selector:
-    matchLabels: 
+    matchLabels:
       app: {{ include "frontend.name" . }}
   template:
     metadata:
@@ -26,36 +26,41 @@ spec:
         app: {{ include "frontend.name" . }}
         tier: frontend
         env: {{ .Values.env }}
-    spec: 
+    spec:
       imagePullSecrets:
-        - name: {{ .Values.imagePullSecret }}
+        - name: {{ .Values.imagePullSecrets[0].name }}
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 3000
-        fsGroup: 2000
+        runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.securityContext.runAsGroup }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: Always
+          image: "{{ .Values.image.registry }}/{{ .Values.image.frontend.name }}:{{ .Values.image.frontend.tag }}"
+          imagePullPolicy: {{ .Values.image.frontend.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.service.port }}
+            - containerPort: {{ .Values.service.frontend.port }}
           env:
             - name: REACT_APP_BACKEND_URL
               value: "{{ .Values.envVars.REACT_APP_BACKEND_URL }}"
-          readinessProbe:
-            httpGet:
-              path: /
-              port: {{ .Values.service.port }}
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            failureThreshold: 3
           livenessProbe:
             httpGet:
-              path: /
-              port: {{ .Values.service.port }}
-            initialDelaySeconds: 15
-            periodSeconds: 20
-            failureThreshold: 3
+              path: {{ .Values.frontend.livenessProbe.path }}
+              port: {{ .Values.frontend.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.frontend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.frontend.readinessProbe.path }}
+              port: {{ .Values.frontend.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.frontend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.readinessProbe.periodSeconds }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.frontend.startupProbe.path }}
+              port: {{ .Values.frontend.startupProbe.port }}
+            initialDelaySeconds: {{ .Values.frontend.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.startupProbe.periodSeconds }}
+            failureThreshold: {{ .Values.frontend.startupProbe.failureThreshold }}
           resources:
             requests:
               cpu: {{ .Values.resources.requests.cpu }}
@@ -64,6 +69,6 @@ spec:
               cpu: {{ .Values.resources.limits.cpu }}
               memory: {{ .Values.resources.limits.memory }}
           securityContext:
-            allowPrivilegeEscalation: false
             runAsNonRoot: true
+            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
