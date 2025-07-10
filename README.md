@@ -70,11 +70,20 @@ spec:
     server: https://kubernetes.default.svc
     namespace: dev
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
+  automated:
+    prune: true
+    selfHeal: true
+    allowEmpty: false
+  retry:
+    limit: 5
+    backoff:
+      duration: 5s
+      factor: 2
+      maxDuration: 3m
+  syncOptions:
+    - CreateNamespace=true
+    - Validate=true
+    - ApplyOutOfSyncOnly=true
 ```
 
 ## 🧩 Chart Highlights (my-app-chart/)
