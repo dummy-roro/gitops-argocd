@@ -1,132 +1,106 @@
-
-# ----------------------------------------
-# Global Configuration
-# ----------------------------------------
-namespace: three-tier
-env: prod
-
-# ----------------------------------------
-# Application Images
-# ----------------------------------------
-image:
-  registry: 407622020962.dkr.ecr.us-east-1.amazonaws.com
-  frontend:
-    name: frontend
-    tag: "3"
-    pullPolicy: Always
-  api:
-    name: backend
-    tag: "1"
-    pullPolicy: Always
-
-# ----------------------------------------
-# Image Pull Secrets
-# ----------------------------------------
-imagePullSecrets:
-  - name: ecr-registry-secret
-
-# ----------------------------------------
-# Deployment Settings
-# ----------------------------------------
+namespace: main-dashboard-prod
+env: production
 replicaCount: 3
 
-resources:
-  limits:
-    cpu: 200m
-    memory: 256Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
+maintainer: frontend-team@example.com
+description: "Production deployment for the main-dashboard application"
+
+# ===== FRONTEND CONFIG =====
+image:
+  registry: ghcr.io/your-org
+  mainDashboard:
+    name: main-dashboard
+    tag: v1.2.3
+    pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: regcred
 
 securityContext:
   runAsNonRoot: true
   runAsUser: 1000
-  runAsGroup: 1000
+  runAsGroup: 3000
 
-# ----------------------------------------
-# Kubernetes Services
-# ----------------------------------------
 service:
-  frontend:
-    name: frontend
+  mainDashboard:
+    type: ClusterIP
     port: 3000
-  api:
-    name: api
-    port: 3500
+    targetPort: 3000
 
-# ----------------------------------------
-# Mongo Secret (used by API)
-# ----------------------------------------
-secrets:
-  mongo:
-    name: mongo-sec
-    usernameKey: username
-    passwordKey: password
-    username: admin
-    password: password123
+envVars:
+  REACT_APP_BACKEND_URL: "https://main-dashboard.example.com/api"
 
-# ----------------------------------------
-# Ingress Configuration
-# ----------------------------------------
-ingress:
-  enabled: true
-  name: mainlb
-  className: alb
-  scheme: internet-facing
-  targetType: ip
-  listenPorts: '[{"HTTP": 80}]'
-  host: amanpathakdevops.study
-  subnets: ""  # override as needed
-
-# Ingress backend service references
-apiService:
-  name: api
-  port: 3500
-
-frontendService:
-  name: frontend
-  port: 3000
-
-# ----------------------------------------
-# Health Probes Per App
-# ----------------------------------------
-api:
+mainDashboard:
   livenessProbe:
     path: /healthz
-    port: 3500
-    initialDelaySeconds: 2
-    periodSeconds: 5
+    port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 15
 
   readinessProbe:
     path: /ready
-    port: 3500
+    port: 3000
     initialDelaySeconds: 5
-    periodSeconds: 5
-    successThreshold: 1
+    periodSeconds: 10
 
   startupProbe:
-    path: /started
-    port: 3500
-    initialDelaySeconds: 0
-    periodSeconds: 10
-    failureThreshold: 30
-
-frontend:
-  livenessProbe:
-    path: /
-    port: 3000
-    initialDelaySeconds: 1
-    periodSeconds: 5
-
-  readinessProbe:
-    path: /
-    port: 3000
-    initialDelaySeconds: 2
-    periodSeconds: 5
-
-  startupProbe:
-    path: /
+    path: /startup
     port: 3000
     initialDelaySeconds: 0
-    periodSeconds: 10
-    failureThreshold: 15
+    periodSeconds: 5
+    failureThreshold: 10
+
+# ===== BACKEND CONFIG =====
+backend:
+  replicaCount: 2
+  imagePullSecret: regcred
+  image:
+    repository: ghcr.io/your-org/main-dashboard-api
+    tag: v1.0.0
+    pullPolicy: Always
+
+  envVars:
+    MONGO_CONN_STR: mongodb://main-dashboard-mongo-secret:27017/dashboarddb
+
+  secrets:
+    mongo:
+      name: main-dashboard-mongo-secret
+      usernameKey: MONGO_USERNAME
+      passwordKey: MONGO_PASSWORD
+
+  service:
+    type: ClusterIP
+    port: 5000
+    targetPort: 5000
+
+  probes:
+    startup:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      failureThreshold: 10
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
+
+# ===== MONGODB SECRET =====
+mongo:
+  secretName: main-dashboard-mongo-secret
+  username: dashboard_user
+  password: s3cr3tP@ssw0rd
+  database: dashboarddb
+
+# ===== INGRESS CONFIG =====
+ingress:
+  enabled: true
+  className: nginx
+  host: main-dashboard.example.com
+  tls:
+    enabled: true
+    secretName: main-dashboard-tls
+    certificateName: main-dashboard-cert
