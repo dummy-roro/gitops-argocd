@@ -9,16 +9,11 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/use-regex: "true"
-    # Uncomment below if switching to AWS ALB:
-    # alb.ingress.kubernetes.io/scheme: internet-facing
-    # alb.ingress.kubernetes.io/target-type: ip
 spec:
-  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
         - {{ .Values.ingress.host }}
       secretName: {{ .Values.ingress.tls.secretName }}
-  {{- end }}
   rules:
     - host: {{ .Values.ingress.host }}
       http:
