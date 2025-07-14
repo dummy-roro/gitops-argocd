@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "common.fullname" . }}
+  name: {{ include "main-dashboard.backendFullname" . }}
   namespace: {{ .Values.namespace }}
   labels:
-    app: {{ include "common.name" . }}
-    tier: api
+    app: {{ include "main-dashboard.backendName" . }}
+    tier: backend
     env: {{ .Values.env }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.backend.replicaCount }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -16,68 +16,68 @@ spec:
       maxUnavailable: 25%
   selector:
     matchLabels:
-      app: {{ include "common.name" . }}
+      app: {{ include "main-dashboard.backendName" . }}
   template:
     metadata:
       labels:
-        app: {{ include "common.name" . }}
-        tier: api
+        app: {{ include "main-dashboard.backendName" . }}
+        tier: backend
         env: {{ .Values.env }}
     spec:
       imagePullSecrets:
-        - name: {{ .Values.imagePullSecret }}
+        - name: {{ .Values.backend.imagePullSecret }}
       securityContext:
         runAsUser: 1000
         runAsGroup: 3000
         fsGroup: 2000
       containers:
         - name: api
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: Always
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
           env:
             - name: MONGO_CONN_STR
-              value: {{ quote .Values.envVars.MONGO_CONN_STR }}
+              value: {{ quote .Values.backend.envVars.MONGO_CONN_STR }}
             - name: MONGO_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secrets.mongo.name }}
-                  key: {{ .Values.secrets.mongo.usernameKey }}
+                  name: {{ .Values.backend.secrets.mongo.name }}
+                  key: {{ .Values.backend.secrets.mongo.usernameKey }}
             - name: MONGO_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secrets.mongo.name }}
-                  key: {{ .Values.secrets.mongo.passwordKey }}
+                  name: {{ .Values.backend.secrets.mongo.name }}
+                  key: {{ .Values.backend.secrets.mongo.passwordKey }}
           ports:
-            - containerPort: {{ .Values.service.port }}
+            - containerPort: {{ .Values.backend.service.port }}
           livenessProbe:
             httpGet:
               path: /healthz
-              port: {{ .Values.service.port }}
+              port: {{ .Values.backend.service.port }}
             initialDelaySeconds: 2
             periodSeconds: 5
           readinessProbe:
             httpGet:
               path: /ready
-              port: {{ .Values.service.port }}
+              port: {{ .Values.backend.service.port }}
             initialDelaySeconds: 5
             periodSeconds: 5
             successThreshold: 1
-          {{- if .Values.probes.startup.enabled }}
+          {{- if .Values.backend.probes.startup.enabled }}
           startupProbe:
             httpGet:
               path: /started
-              port: {{ .Values.service.port }}
-            initialDelaySeconds: {{ .Values.probes.startup.initialDelaySeconds }}
-            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
-            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+              port: {{ .Values.backend.service.port }}
+            initialDelaySeconds: {{ .Values.backend.probes.startup.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.probes.startup.periodSeconds }}
+            failureThreshold: {{ .Values.backend.probes.startup.failureThreshold }}
           {{- end }}
           resources:
             requests:
-              cpu: {{ .Values.resources.requests.cpu }}
-              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.backend.resources.requests.cpu }}
+              memory: {{ .Values.backend.resources.requests.memory }}
             limits:
-              cpu: {{ .Values.resources.limits.cpu }}
-              memory: {{ .Values.resources.limits.memory }}
+              cpu: {{ .Values.backend.resources.limits.cpu }}
+              memory: {{ .Values.backend.resources.limits.memory }}
           securityContext:
             allowPrivilegeEscalation: false
             runAsNonRoot: true
