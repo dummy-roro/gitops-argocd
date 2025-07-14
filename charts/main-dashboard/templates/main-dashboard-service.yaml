@@ -1,18 +1,18 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "frontend.fullname" . }}
+  name: {{ include "main-dashboard.fullname" . }}
   namespace: {{ .Values.namespace }}
   labels:
-    app: {{ include "frontend.name" . }}
+    app: {{ include "main-dashboard.name" . }}
     tier: frontend
     env: {{ .Values.env }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.service.mainDashboard.type | default "ClusterIP" }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.targetPort | default .Values.service.port }}
+    - port: {{ .Values.service.mainDashboard.port }}
+      targetPort: {{ .Values.service.mainDashboard.targetPort | default .Values.service.mainDashboard.port }}
       protocol: TCP
       name: http
   selector:
-    app: {{ include "frontend.name" . }}
+    app: {{ include "main-dashboard.name" . }}
