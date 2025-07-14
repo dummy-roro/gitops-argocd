@@ -12,28 +12,27 @@ This repository implements a GitOps workflow using Argo CD and Helm to manage Ku
 ```
 gitops-argocd/
 ├── apps/
-│   ├── dev/
-│   │   ├── my-app/
-│   │   │   └── application.yaml      # Argo CD Application CR for dev
-│   ├── stg/
-│   │   ├── my-app/
+│   ├── main-dashboard/
+│   │   ├── stg/
 │   │   │   └── application.yaml
-│   └── prod/
-│       ├── my-app/
+│   │   └── prod/
+│   │       └── application.yaml
+│   └── school-dashboard/
+│       ├── stg/
 │       │   └── application.yaml
+│       └── prod/
+│           └── application.yaml
 ├── charts/
-│   └── my-app-chart/                 # Reusable Helm chart
+│   ├── main-dashboard/
+│   │   ├── Chart.yaml
+│   │   ├── values-staging.yaml
+│   │   ├── values-prod.yaml
+│   │   └── templates/
+│   └── school-dashboard/
 │       ├── Chart.yaml
-│       ├── templates/
-│       │   ├── frontend-deployment.yaml
-│       │   ├── frontend-service.yaml
-│       │   ├── backend-deployment.yaml
-│       │   ├── backend-service.yaml
-│       │   ├── secert.yaml
-│       │   └── ingress.yaml            
-│       ├── values-dev.yaml
-│       ├── values-stg.yaml
-│       └── values-prod.yaml
+│       ├── values-staging.yaml
+│       ├── values-prod.yaml
+│       └── templates/
 └── README.md
 ```
 
