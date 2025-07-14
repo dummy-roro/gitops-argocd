@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "frontend.fullname" . }}
+  name: {{ include "main-dashboard.fullname" . }}
   namespace: {{ .Values.namespace }}
   labels:
-    app: {{ include "frontend.name" . }}
+    app: {{ include "main-dashboard.name" . }}
     tier: frontend
     env: {{ .Values.env }}
   annotations:
     maintainer: "{{ .Values.maintainer | default "your-team@example.com" }}"
-    description: "{{ .Values.description | default "Frontend deployment for the three-tier app" }}"
+    description: "{{ .Values.description | default "Deployment for main-dashboard application" }}"
 spec:
   replicas: {{ .Values.replicaCount }}
   strategy:
@@ -19,11 +19,11 @@ spec:
       maxUnavailable: 25%
   selector:
     matchLabels:
-      app: {{ include "frontend.name" . }}
+      app: {{ include "main-dashboard.name" . }}
   template:
     metadata:
       labels:
-        app: {{ include "frontend.name" . }}
+        app: {{ include "main-dashboard.name" . }}
         tier: frontend
         env: {{ .Values.env }}
     spec:
@@ -35,32 +35,32 @@ spec:
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.registry }}/{{ .Values.image.frontend.name }}:{{ .Values.image.frontend.tag }}"
-          imagePullPolicy: {{ .Values.image.frontend.pullPolicy }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.mainDashboard.name }}:{{ .Values.image.mainDashboard.tag }}"
+          imagePullPolicy: {{ .Values.image.mainDashboard.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.service.frontend.port }}
+            - containerPort: {{ .Values.service.mainDashboard.port }}
           env:
             - name: REACT_APP_BACKEND_URL
               value: "{{ .Values.envVars.REACT_APP_BACKEND_URL }}"
           livenessProbe:
             httpGet:
-              path: {{ .Values.frontend.livenessProbe.path }}
-              port: {{ .Values.frontend.livenessProbe.port }}
-            initialDelaySeconds: {{ .Values.frontend.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.frontend.livenessProbe.periodSeconds }}
+              path: {{ .Values.mainDashboard.livenessProbe.path }}
+              port: {{ .Values.mainDashboard.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.mainDashboard.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mainDashboard.livenessProbe.periodSeconds }}
           readinessProbe:
             httpGet:
-              path: {{ .Values.frontend.readinessProbe.path }}
-              port: {{ .Values.frontend.readinessProbe.port }}
-            initialDelaySeconds: {{ .Values.frontend.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.frontend.readinessProbe.periodSeconds }}
+              path: {{ .Values.mainDashboard.readinessProbe.path }}
+              port: {{ .Values.mainDashboard.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.mainDashboard.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mainDashboard.readinessProbe.periodSeconds }}
           startupProbe:
             httpGet:
-              path: {{ .Values.frontend.startupProbe.path }}
-              port: {{ .Values.frontend.startupProbe.port }}
-            initialDelaySeconds: {{ .Values.frontend.startupProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.frontend.startupProbe.periodSeconds }}
-            failureThreshold: {{ .Values.frontend.startupProbe.failureThreshold }}
+              path: {{ .Values.mainDashboard.startupProbe.path }}
+              port: {{ .Values.mainDashboard.startupProbe.port }}
+            initialDelaySeconds: {{ .Values.mainDashboard.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mainDashboard.startupProbe.periodSeconds }}
+            failureThreshold: {{ .Values.mainDashboard.startupProbe.failureThreshold }}
           resources:
             requests:
               cpu: {{ .Values.resources.requests.cpu }}
