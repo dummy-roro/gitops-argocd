@@ -1,132 +1,78 @@
-# ----------------------------------------
-# Global Configuration
-# ----------------------------------------
-namespace: main
+namespace: main-dashboard
 env: dev
 
-# ----------------------------------------
-# Application Images
-# ----------------------------------------
-image:
-  registry: 407622020962.dkr.ecr.us-east-1.amazonaws.com
-  frontend:
-    name: frontend
-    tag: "3"
-    pullPolicy: Always
-  api:
-    name: backend
-    tag: "1"
-    pullPolicy: Always
+replicaCount: 1
 
-# ----------------------------------------
-# Image Pull Secrets
-# ----------------------------------------
 imagePullSecrets:
   - name: ecr-registry-secret
 
-# ----------------------------------------
-# Deployment Settings
-# ----------------------------------------
-replicaCount: 1
+image:
+  registry: 123456789012.dkr.ecr.us-east-1.amazonaws.com          # replace with your ECR registry
+  frontend:
+    name: main-dashboard-frontend
+    tag: latest
+    pullPolicy: Always
+  backend:
+    name: main-dashboard-backend
+    tag: latest
+    pullPolicy: Always
+
+envVars:
+  REACT_APP_BACKEND_URL: https://api.main-dashboard.com
+  MONGO_CONN_STR: mongodb://mongo.prod.svc.cluster.local:27017/dashboard
+
+secrets:
+  mongo:
+    name: mongo-secret
+    usernameKey: username
+    passwordKey: password
+
+service:
+  type: ClusterIP
+  frontend:
+    port: 80
+    targetPort: 80
+  backend:
+    port: 5000
+    targetPort: 5000
+  # Use this block when `common` is used in service template for backend
+  port: 5000
+  targetPort: 5000
+
+frontend:
+  livenessProbe:
+    path: /healthz
+    port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  readinessProbe:
+    path: /ready
+    port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  startupProbe:
+    path: /started
+    port: 80
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 30
+
+probes:
+  startup:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 30
 
 resources:
-  limits:
-    cpu: 200m
-    memory: 256Mi
   requests:
-    cpu: 100m
-    memory: 128Mi
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "250m"
+    memory: "256Mi"
 
 securityContext:
   runAsNonRoot: true
   runAsUser: 1000
-  runAsGroup: 1000
-
-# ----------------------------------------
-# Kubernetes Services
-# ----------------------------------------
-service:
-  frontend:
-    name: frontend
-    port: 3000
-  api:
-    name: api
-    port: 3500
-
-# ----------------------------------------
-# Mongo Secret (used by API)
-# ----------------------------------------
-secrets:
-  mongo:
-    name: mongo-sec
-    usernameKey: username
-    passwordKey: password
-    username: admin
-    password: password123
-
-# ----------------------------------------
-# Ingress Configuration
-# ----------------------------------------
-ingress:
-  enabled: true
-  name: mainlb
-  className: alb
-  scheme: internet-facing
-  targetType: ip
-  listenPorts: '[{"HTTP": 80}]'
-  host: amanpathakdevops.study
-  subnets: ""  # Leave blank in dev; override in prod
-
-# Ingress backend service references
-apiService:
-  name: api
-  port: 3500
-
-frontendService:
-  name: frontend
-  port: 3000
-
-# ----------------------------------------
-# Health Probes Per App
-# ----------------------------------------
-
-api:
-  livenessProbe:
-    path: /healthz
-    port: 3500
-    initialDelaySeconds: 2
-    periodSeconds: 5
-
-  readinessProbe:
-    path: /ready
-    port: 3500
-    initialDelaySeconds: 5
-    periodSeconds: 5
-    successThreshold: 1
-
-  startupProbe:
-    path: /started
-    port: 3500
-    initialDelaySeconds: 0
-    periodSeconds: 10
-    failureThreshold: 30
-
-frontend:
-  livenessProbe:
-    path: /
-    port: 3000
-    initialDelaySeconds: 1
-    periodSeconds: 5
-
-  readinessProbe:
-    path: /
-    port: 3000
-    initialDelaySeconds: 2
-    periodSeconds: 5
-
-  startupProbe:
-    path: /
-    port: 3000
-    initialDelaySeconds: 0
-    periodSeconds: 10
-    failureThreshold: 15
+  runAsGroup: 3000
