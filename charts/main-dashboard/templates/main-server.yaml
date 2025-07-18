@@ -24,8 +24,10 @@ spec:
         tier: backend
         env: {{ .Values.env }}
     spec:
+      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        - name: {{ .Values.backend.imagePullSecret }}
+      {{ toYaml .Values.imagePullSecrets | indent 8 }}
+      {{- end }}
       securityContext:
         runAsUser: {{ .Values.backend.securityContext.runAsUser }}
         runAsGroup: {{ .Values.backend.securityContext.runAsGroup }}
