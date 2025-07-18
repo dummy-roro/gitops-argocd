@@ -27,9 +27,9 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.backend.imagePullSecret }}
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 3000
-        fsGroup: 2000
+        runAsUser: {{ .Values.backend.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.backend.securityContext.runAsGroup }}
+        fsGroup: {{ .Values.backend.securityContext.fsGroup }}
       containers:
         - name: api
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
@@ -79,6 +79,30 @@ spec:
               cpu: {{ .Values.backend.resources.limits.cpu }}
               memory: {{ .Values.backend.resources.limits.memory }}
           securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: {{ .Values.backend.containerSecurityContext.allowPrivilegeEscalation }}
+            runAsNonRoot: {{ .Values.backend.containerSecurityContext.runAsNonRoot }}
+            readOnlyRootFilesystem: {{ .Values.backend.containerSecurityContext.readOnlyRootFilesystem }}
+            capabilities:
+              drop:
+              {{- range .Values.backend.containerSecurityContext.capabilities.drop }}
+                - {{ . }}
+              {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "main-dashboard.backendFullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ include "main-dashboard.backendName" . }}
+    tier: backend
+    env: {{ .Values.env }}
+spec:
+  type: {{ .Values.backend.service.type }}
+  ports:
+    - port: {{ .Values.backend.service.port }}
+      targetPort: {{ .Values.backend.service.targetPort | default .Values.backend.service.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "main-dashboard.backendName" . }}
