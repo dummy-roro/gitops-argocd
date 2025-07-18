@@ -74,8 +74,25 @@ backend:
     targetPort: 5000
 
   probes:
+    liveness:
+      enabled: true
+      path: /healthz
+      port: 5000
+      initialDelaySeconds: 5
+      periodSeconds: 10
+
+    readiness:
+      enabled: true
+      path: /ready
+      port: 5000
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+
     startup:
       enabled: true
+      path: /startup
+      port: 5000
       initialDelaySeconds: 5
       periodSeconds: 10
       failureThreshold: 10
@@ -87,6 +104,19 @@ backend:
     limits:
       cpu: "500m"
       memory: "256Mi"
+
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
 
 # ===== MONGODB SECRET =====
 mongo:
