@@ -33,6 +33,9 @@ spec:
         runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
         runAsUser: {{ .Values.securityContext.runAsUser }}
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
+        {{- if .Values.securityContext.fsGroup }}
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.registry }}/{{ .Values.image.mainDashboard.name }}:{{ .Values.image.mainDashboard.tag }}"
@@ -69,6 +72,30 @@ spec:
               cpu: {{ .Values.resources.limits.cpu }}
               memory: {{ .Values.resources.limits.memory }}
           securityContext:
-            runAsNonRoot: true
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+            runAsNonRoot: {{ .Values.containerSecurityContext.runAsNonRoot }}
+            allowPrivilegeEscalation: {{ .Values.containerSecurityContext.allowPrivilegeEscalation }}
+            readOnlyRootFilesystem: {{ .Values.containerSecurityContext.readOnlyRootFilesystem }}
+            capabilities:
+              drop:
+              {{- range .Values.containerSecurityContext.capabilities.drop }}
+                - {{ . }}
+              {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "main-dashboard.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ include "main-dashboard.name" . }}
+    tier: frontend
+    env: {{ .Values.env }}
+spec:
+  type: {{ .Values.service.mainDashboard.type | default "ClusterIP" }}
+  ports:
+    - port: {{ .Values.service.mainDashboard.port }}
+      targetPort: {{ .Values.service.mainDashboard.targetPort | default .Values.service.mainDashboard.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "main-dashboard.name" . }}
