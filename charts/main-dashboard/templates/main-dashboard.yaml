@@ -27,8 +27,10 @@ spec:
         tier: frontend
         env: {{ .Values.env }}
     spec:
+      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        - name: {{ .Values.imagePullSecrets[0].name }}
+      {{ toYaml .Values.imagePullSecrets | indent 8 }}
+      {{- end }}
       securityContext:
         runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
         runAsUser: {{ .Values.securityContext.runAsUser }}
