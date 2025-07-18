@@ -13,8 +13,8 @@ image:
     tag: v1.2.3
     pullPolicy: IfNotPresent
 
-imagePullSecrets:
-  - name: regcred
+# imagePullSecrets:
+#   - name: regcred
 
 securityContext:
   runAsNonRoot: true
